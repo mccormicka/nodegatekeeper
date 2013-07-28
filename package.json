@@ -1,0 +1,39 @@
+{
+  "name": "nodegatekeeper",
+  "description": "NodeGateKeeper is a permissions tool for node. It comes with a middlware for express",
+  "version": "0.0.1",
+  "author": {
+    "name": "Anthony McCormick",
+    "email": "anthony.mccormick AT gmail.com"
+  },
+  "keywords": [
+    "mongodb",
+    "mongoose"
+  ],
+  "scripts": {
+    "test": "./node_modules/jasmine-node/bin/jasmine-node test/ --verbose --color --captureExceptions"
+  },
+  "main": "index",
+  "engines": {
+    "node": ">=0.6.19"
+  },
+  "bugs": {
+    "url": "https://github.com/mccormicka/NodeGateKeeper/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mccormicka/NodeGateKeeper"
+  },
+  "homepage": "https://github.com/mccormicka/NodeGateKeeper",
+  "readmeFilename": "README.md",
+  "dependencies": {
+    "lodash": "~1.3.1",
+    "mongoose": "~3.6.2",
+    "mongoose-validator": "~0.2.1",
+    "validator": "~1.3.0"
+  },
+  "devDependencies": {
+    "mockgoose": "0.0.13",
+    "jasmine-node": "~1.10.2"
+  }
+}
