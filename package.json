@@ -1,7 +1,7 @@
 {
   "name": "nodegatekeeper",
   "description": "NodeGateKeeper is a permissions tool for node. It comes with a middlware for express",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": {
     "name": "Anthony McCormick",
     "email": "anthony.mccormick AT gmail.com"

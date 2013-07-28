@@ -122,7 +122,7 @@ function NodeGateKeeper() {
             this.Feature.isEnabled({flag: options.flag}, options.permissions, done);
         },
 
-        isEnabledFeatureRoute: function (flag) {
+        isEnabledFeature: function (flag) {
             var gate = this;
             return function (req, res, next) {
                 gate.permissionsFunction(req, res, function(err, result){
