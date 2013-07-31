@@ -152,7 +152,7 @@ function NodeGateKeeper() {
     //-------------------------------------------------------------------------
 
     function sanitizeValue(value) {
-        return sanitize(value).xss();
+        return sanitize(value).xss().toLowerCase();
     }
 
     function validateParams(value) {
