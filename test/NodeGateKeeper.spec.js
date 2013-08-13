@@ -7,7 +7,7 @@ describe('GateKeeper tests', function () {
     var connection = mongoose.createConnection('mongodb://localhost:3001/NodeGatekeeperTests');
 
     var TestClass = require('../index');
-    TestClass.initialize(mongoose, connection, function (req, res, next) {
+    TestClass.initialize(connection, function (req, res, next) {
         next(null, [{name:'admin'}]);
     });
     var Feature = TestClass.Feature;
@@ -78,7 +78,7 @@ describe('GateKeeper tests', function () {
 
             it('Add a feature without any permissions should have all permissions disabled', function (done) {
                 gate.addFeature({flag: 'test-feature'}, function (err, result) {
-                    expect(err).toBeNull();
+                    expect(err).toBeUndefined();
                     expect(result).toBeDefined();
                     if (result) {
                         expect(result.permissions.length).toBe(2);
@@ -134,12 +134,41 @@ describe('GateKeeper tests', function () {
                 });
             });
 
+            it('Return the updated feature if one is found', function (done) {
+                gate.updateFeature({'description': 'Really long', 'flag': 'before-feature', 'permissions': [
+                    {'name': 'admin', 'percent': 10, 'enabled': true}
+                ]}, function (err, result) {
+                    expect(err).toBeNull();
+                    expect(result).not.toBeNull();
+                    if(result){
+                        expect(result.description).toBe('Really long');
+                    }
+                    done(err);
+                });
+            });
+
+            it('Not return an updated feature if one is not found', function (done) {
+                gate.updateFeature({'description': 'Really long', 'flag': 'before-feature-fake', 'permissions': [
+                    {'name': 'admin', 'percent': 10, 'enabled': true}
+                ]}, function (err) {
+                    expect(err).not.toBeNull();
+                    if(err){
+                        expect(err.message).toBe('api.error.invalid.params');
+                        expect(err.data[0].value.flag).toBe('before-feature-fake');
+                        done();
+                    }else{
+                        done('Updated feature test failure');
+                    }
+                });
+            });
+
+
             it('Update a features permissions', function (done) {
                 gate.updateFeature({'description': 'Really long', 'flag': 'before-feature', 'permissions': [
                     {'name': 'admin', 'percent': 10, 'enabled': true}
                 ]}, function (err, result) {
                     expect(err).toBeNull();
-                    expect(result).toBe(1);
+                    expect(result.flag).toBe('before-feature');
                     if (result) {
                         Feature.findOne({flag: 'before-feature'}, function (err, result) {
                             expect(err).toBeNull();
@@ -164,7 +193,7 @@ describe('GateKeeper tests', function () {
                     {name: 'guest'},
                     {name: 'temp'}
                 ]}, function (err, result) {
-                    expect(err).toBeNull();
+                    expect(err).toBeUndefined();
                     expect(result).toBeTruthy();
                     if (result) {
                         var permissions = result.permissions;
@@ -190,8 +219,8 @@ describe('GateKeeper tests', function () {
                     expect(result).toBeNull();
                     if (err) {
                         expect(err).toBeDefined();
-                        expect(err.name).toBe('MongoError');
-                        expect(err.code).toBe(11000);
+                        expect(err.message).toBe('api.error.conflict');
+                        expect(err.data).toBe('duplicate');
                     }
                     done();
                 });
@@ -203,8 +232,8 @@ describe('GateKeeper tests', function () {
                     'temp'
                 ]}, function (err, result) {
                     expect(err).toBeTruthy();
-                    expect(result).toBeNull();
-                    expect(err.message).toBe('invalid.permission');
+                    expect(result).toBeUndefined();
+                    expect(err.message).toBe('api.error.invalid.params');
                     done();
                 });
             });
@@ -215,8 +244,8 @@ describe('GateKeeper tests', function () {
                     'temp'
                 ]}, function (err, result) {
                     expect(err).toBeTruthy();
-                    expect(result).toBeNull();
-                    expect(err.message).toBe('invalid.permission');
+                    expect(result).toBeUndefined();
+                    expect(err.message).toBe('api.error.invalid.params');
                     done();
                 });
             });
@@ -237,7 +266,6 @@ describe('GateKeeper tests', function () {
                     {'name': 'before-permission', 'percent': 10, 'enabled': false}
                 ]}, function (err, result) {
                     expect(err).toBeNull();
-                    expect(result).toBe(1);
                     if (result) {
                         gate.isEnabled({flag: 'before-feature'}, function (err, result) {
                             expect(result).toBe(false);
@@ -255,7 +283,7 @@ describe('GateKeeper tests', function () {
                     {'name': 'before-permission', 'percent': 10, 'enabled': true}
                 ]}, function (err, result) {
                     expect(err).toBeNull();
-                    expect(result).toBe(1);
+
                     if (result) {
                         gate.isEnabled({flag: 'before-feature'}, function (err, result) {
                             expect(result).toBe(true);
@@ -272,7 +300,7 @@ describe('GateKeeper tests', function () {
                     {'name': 'admin', 'percent': 10, 'enabled': true}
                 ]}, function (err, result) {
                     expect(err).toBeNull();
-                    expect(result).toBe(1);
+
                     if (result) {
                         gate.isEnabled({flag: 'before-feature', permissions: [
                             {name: 'Admin'}
@@ -314,7 +342,7 @@ describe('GateKeeper tests', function () {
                     {'name': 'percent', 'percent': 0.5, 'enabled': true}
                 ]}, function (err, result) {
                     expect(err).toBeNull();
-                    expect(result).toBe(1);
+
                     if (result) {
                         percentageChange(gate, [
                             {name: 'percent'}
@@ -355,7 +383,7 @@ describe('GateKeeper tests', function () {
                     {'name': 'percent', 'percent': 0.25, 'enabled': true}
                 ]}, function (err, result) {
                     expect(err).toBeNull();
-                    expect(result).toBe(1);
+
                     if (result) {
                         percentageChange(gate, [
                             {name: 'percent'}
@@ -382,7 +410,7 @@ describe('GateKeeper tests', function () {
                     {'name': 'percent', 'percent': 0.01, 'enabled': true}
                 ]}, function (err, result) {
                     expect(err).toBeNull();
-                    expect(result).toBe(1);
+
                     if (result) {
                         percentageChange(gate, [
                             {name: 'percent'}
@@ -409,7 +437,7 @@ describe('GateKeeper tests', function () {
                 {'name': 'percent', 'percent': 0, 'enabled': true}
             ]}, function (err, result) {
                 expect(err).toBeNull();
-                expect(result).toBe(1);
+
                 if (result) {
                     percentageChange(gate, [
                         {name: 'percent'}

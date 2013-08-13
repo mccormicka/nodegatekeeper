@@ -6,8 +6,10 @@ describe('GateKeeperFeature tests', function () {
     mockgoose(mongoose);
     var connection = mongoose.createConnection('mongodb://localhost:3001/NodeGatekeeperTests');
     var Gate = require('../index');
-    Gate.initialize(mongoose, connection, function (req, res, next) {
-        next(null, [{name:'admin'}]);
+    Gate.initialize(connection, function (req, res, next) {
+        next(null, [
+            {name: 'admin'}
+        ]);
     });
 
     var TestClass = Gate.Feature;
