@@ -8,15 +8,15 @@ describe('GateKeeper tests', function () {
 
     var TestClass = require('../index');
     TestClass.initialize(connection, function (req, res, next) {
-        next(null, [{name:'admin'}]);
+        next(null, [
+            {name: 'admin'}
+        ]);
     });
     var Feature = TestClass.Feature;
     var Permission = TestClass.Permission;
 
-
     var ObjectId = require('mongoose').Types.ObjectId;
     var _ = require('lodash');
-
 
     var gate;
     beforeEach(function (done) {
@@ -24,17 +24,18 @@ describe('GateKeeper tests', function () {
         gate = TestClass;
         Permission.create({name: 'admin'}, {name: 'before-permission'}, function (err, admin, beforePermission) {
             Feature.create({flag: 'before-feature', permissions: [
-                {
-                    name: beforePermission.name,
-                    _id: beforePermission._id
-                },
-                {
-                    name: admin.name,
-                    _id: admin._id
-                }
-            ]}, {flag: 'percent'}, function (err) {
-                done(err);
-            });
+                    {
+                        name: beforePermission.name,
+                        _id: beforePermission._id
+                    },
+                    {
+                        name: admin.name,
+                        _id: admin._id
+                    }
+                ], enabled: true},
+                {flag: 'percent', enabled: true}, function (err) {
+                    done(err);
+                });
         });
     });
 
@@ -140,7 +141,7 @@ describe('GateKeeper tests', function () {
                 ]}, function (err, result) {
                     expect(err).toBeNull();
                     expect(result).not.toBeNull();
-                    if(result){
+                    if (result) {
                         expect(result.description).toBe('Really long');
                     }
                     done(err);
@@ -152,16 +153,15 @@ describe('GateKeeper tests', function () {
                     {'name': 'admin', 'percent': 10, 'enabled': true}
                 ]}, function (err) {
                     expect(err).not.toBeNull();
-                    if(err){
+                    if (err) {
                         expect(err.message).toBe('api.error.invalid.params');
                         expect(err.data[0].value.flag).toBe('before-feature-fake');
                         done();
-                    }else{
+                    } else {
                         done('Updated feature test failure');
                     }
                 });
             });
-
 
             it('Update a features permissions', function (done) {
                 gate.updateFeature({'description': 'Really long', 'flag': 'before-feature', 'permissions': [
@@ -335,6 +335,141 @@ describe('GateKeeper tests', function () {
             });
         });
 
+        describe('isEnabledFeature middleware', function () {
+
+            describe('Permissions Required', function () {
+
+                it('Return isEnabled false if any permissions are disabled and no permissions passed', function (done) {
+                    var callback = gate.isEnabledFeature('before-feature');
+                    callback({}, {}, function (err, result) {
+                        expect(err).toEqual({ message: 'api.error.forbidden' });
+                        expect(result).toBe(false);
+                        done();
+                    });
+                });
+
+                it('Return isEnabled false if any permissions are disabled and no permissions passed', function (done) {
+                    gate.updateFeature({'flag': 'before-feature', 'permissions': [
+                        {'name': 'admin', 'percent': 10, 'enabled': true},
+                        {'name': 'before-permission', 'percent': 10, 'enabled': false}
+                    ]}, function (err, result) {
+                        expect(err).toBeNull();
+                        if (result) {
+                            gate.permissionsFunction = function (req, res, next) {
+                                next();
+                            };
+                            var callback = gate.isEnabledFeature('before-feature');
+                            callback({}, {}, function (err, result) {
+                                expect(err).toEqual({ message: 'api.error.forbidden' });
+                                expect(result).toBe(false);
+                                done();
+                            });
+                        } else {
+                            done('Error updating feature');
+                        }
+                    });
+                });
+
+                it('Return isEnabled true if all permissions are enabled and no permissions passed', function (done) {
+                    gate.updateFeature({'flag': 'before-feature', 'permissions': [
+                        {'name': 'admin', 'percent': 10, 'enabled': true},
+                        {'name': 'before-permission', 'percent': 10, 'enabled': true}
+                    ]}, function (err, result) {
+                        expect(err).toBeNull();
+                        if (result) {
+                            gate.permissionsFunction = function (req, res, next) {
+                                next();
+                            };
+                            var callback = gate.isEnabledFeature('before-feature');
+                            callback({}, {}, function (err, result) {
+                                expect(result).toBe(true);
+                                expect(err).toBeNull();
+                                done();
+                            });
+                        } else {
+                            done('Error updating feature');
+                        }
+                    });
+                });
+
+                it('Return isEnabled true for enabled feature with permission', function (done) {
+                    gate.updateFeature({'flag': 'before-feature', 'permissions': [
+                        {'name': 'admin', 'percent': 10, 'enabled': true}
+                    ]}, function (err, result) {
+                        expect(err).toBeNull();
+                        if (result) {
+                            var callback = gate.isEnabledFeature('before-feature');
+                            callback({}, {}, function (err, result) {
+                                expect(result).toBe(true);
+                                expect(err).toBeNull();
+                                done();
+                            });
+                        } else {
+                            done('Error updating feature');
+                        }
+                    });
+                });
+
+                it('Return isEnabled false for an unknown permission', function (done) {
+                    gate.permissionsFunction = function (req, res, next) {
+                        next(null, [
+                            {name: 'blah'}
+                        ]);
+                    };
+                    var callback = gate.isEnabledFeature('before-feature');
+                    callback({}, {}, function (err, result) {
+                        expect(err).toEqual({ message: 'api.error.forbidden' });
+                        expect(result).toBe(false);
+                        done();
+                    });
+                });
+
+                it('Return isEnabled false if one of the permissions is unknown', function (done) {
+                    gate.permissionsFunction = function (req, res, next) {
+                        next(null, [
+                            {name: 'admin'},
+                            {name: 'blah'}
+                        ]);
+                    };
+                    var callback = gate.isEnabledFeature('before-feature');
+                    callback({}, {}, function (err, result) {
+                        expect(err).toEqual({ message: 'api.error.forbidden' });
+                        expect(result).toBe(false);
+                        done();
+                    });
+                });
+
+            });
+
+            describe('NO permissions required', function () {
+
+                it('Return isEnabled true if feature is enabled', function (done) {
+                    gate.permissionsFunction = function (req, res, next) {
+                        next();//Send no permissions with the request
+                    };
+                    var callback = gate.isEnabledFeature('before-feature', false);
+                    callback({}, {}, function (err, result) {
+                        expect(result).toBe(true);
+                        expect(err).toBeNull();
+                        done();
+                    });
+                });
+
+                it('Return isEnabled false if feature is disabled', function (done) {
+                    gate.permissionsFunction = function (req, res, next) {
+                        next();//Send no permissions with the request
+                    };
+                    var callback = gate.isEnabledFeature('before-feature', false);
+                    callback({}, {}, function (err, result) {
+                        expect(result).toBe(true);
+                        expect(err).toBeNull();
+                        done();
+                    });
+                });
+            });
+
+        });
+
         describe('Enabled Percentage', function () {
 
             it('Be enabled at 50% permission ', function (done) {
@@ -342,7 +477,6 @@ describe('GateKeeper tests', function () {
                     {'name': 'percent', 'percent': 0.5, 'enabled': true}
                 ]}, function (err, result) {
                     expect(err).toBeNull();
-
                     if (result) {
                         percentageChange(gate, [
                             {name: 'percent'}
