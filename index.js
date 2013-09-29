@@ -1,6 +1,7 @@
 'use strict';
 
 var NodeGateKeeper = require('./lib/NodeGatekeeper');
+var ErrorUtil = require('./lib/ErrorUtil');
 var gatekeeper = new NodeGateKeeper();
 
 /**
@@ -17,4 +18,5 @@ module.exports.removeFeature = gatekeeper.removeFeature;
 module.exports.updateFeature = gatekeeper.updateFeature;
 module.exports.isEnabled = gatekeeper.isEnabled;
 module.exports.isEnabledFeature = gatekeeper.isEnabledFeature;
+module.exports.isGateKeeperError = ErrorUtil.isGateKeeperError;
 

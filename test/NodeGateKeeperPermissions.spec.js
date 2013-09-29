@@ -109,7 +109,7 @@ describe('GateKeeper Permissions tests', function () {
         it('Strip out possible xss attacks', function (done) {
             gate.addPermission({name: '<a href="javascript:alert(\'xss\')">some text</a>'}, function (err, result) {
                 expect(err).not.toBeNull();
-                expect(err.message).toBe('api.error.invalid.params');
+                expect(err.message).toBe('gatekeeper.error.invalid.params');
                 expect(result).toBeUndefined();
                 done();
             });
@@ -213,7 +213,7 @@ describe('GateKeeper Permissions tests', function () {
             gate.removePermission('', function (err, result) {
                 expect(err).not.toBeNull();
                 if (err) {
-                    expect(err.message).toBe('api.error.invalid.params');
+                    expect(err.message).toBe('gatekeeper.error.invalid.params');
                 }
                 expect(result).toBeUndefined();
                 done();
@@ -224,7 +224,7 @@ describe('GateKeeper Permissions tests', function () {
             gate.removePermission(null, function (err, result) {
                 expect(err).not.toBeNull();
                 if (err) {
-                    expect(err.message).toBe('api.error.invalid.params');
+                    expect(err.message).toBe('gatekeeper.error.invalid.params');
                 }
                 expect(result).toBeUndefined();
                 done();
@@ -235,7 +235,7 @@ describe('GateKeeper Permissions tests', function () {
             gate.removePermission(undefined, function (err, result) {
                 expect(err).not.toBeNull();
                 if (err) {
-                    expect(err.message).toBe('api.error.invalid.params');
+                    expect(err.message).toBe('gatekeeper.error.invalid.params');
                 }
                 expect(result).toBeUndefined();
                 done();
@@ -246,7 +246,7 @@ describe('GateKeeper Permissions tests', function () {
             gate.removePermission({}, function (err, result) {
                 expect(err).not.toBeNull();
                 if (err) {
-                    expect(err.message).toBe('api.error.invalid.params');
+                    expect(err.message).toBe('gatekeeper.error.invalid.params');
                 }
                 expect(result).toBeUndefined();
                 done();
@@ -268,7 +268,7 @@ describe('GateKeeper Permissions tests', function () {
                 gate.addPermission({name: 'duplicate'}, function (err) {
                     expect(err).toBeDefined();
                     console.log(err);
-                    expect(err.message).toBe('api.error.conflict');
+                    expect(err.message).toBe('gatekeeper.error.conflict');
                     expect(err.data).toBe('duplicate');
                     done();
                 });
@@ -278,7 +278,7 @@ describe('GateKeeper Permissions tests', function () {
         it('Add a blank vallue \'\'', function (done) {
             gate.addPermission('', function (err, result) {
                 expect(err).not.toBeNull();
-                expect(err.message).toBe('api.error.invalid.params');
+                expect(err.message).toBe('gatekeeper.error.invalid.params');
                 expect(result).toBeUndefined();
                 done();
             });
@@ -287,7 +287,7 @@ describe('GateKeeper Permissions tests', function () {
         it('Add a null value', function (done) {
             gate.addPermission(null, function (err, result) {
                 expect(err).not.toBeNull();
-                expect(err.message).toBe('api.error.invalid.params');
+                expect(err.message).toBe('gatekeeper.error.invalid.params');
                 expect(result).toBeUndefined();
                 done();
             });
@@ -296,7 +296,7 @@ describe('GateKeeper Permissions tests', function () {
         it('Add an undefined value', function (done) {
             gate.addPermission(undefined, function (err, result) {
                 expect(err).not.toBeNull();
-                expect(err.message).toBe('api.error.invalid.params');
+                expect(err.message).toBe('gatekeeper.error.invalid.params');
                 expect(result).toBeUndefined();
                 done();
             });
@@ -305,7 +305,7 @@ describe('GateKeeper Permissions tests', function () {
         it('Add an empty value {}', function (done) {
             gate.addPermission({}, function (err, result) {
                 expect(err).not.toBeNull();
-                expect(err.message).toBe('api.error.invalid.params');
+                expect(err.message).toBe('gatekeeper.error.invalid.params');
                 expect(result).toBeUndefined();
                 done();
             });

@@ -154,7 +154,7 @@ describe('GateKeeper tests', function () {
                 ]}, function (err) {
                     expect(err).not.toBeNull();
                     if (err) {
-                        expect(err.message).toBe('api.error.invalid.params');
+                        expect(err.message).toBe('gatekeeper.error.invalid.params');
                         expect(err.data[0].value.flag).toBe('before-feature-fake');
                         done();
                     } else {
@@ -219,7 +219,7 @@ describe('GateKeeper tests', function () {
                     expect(result).toBeNull();
                     if (err) {
                         expect(err).toBeDefined();
-                        expect(err.message).toBe('api.error.conflict');
+                        expect(err.message).toBe('gatekeeper.error.conflict');
                         expect(err.data).toBe('duplicate');
                     }
                     done();
@@ -233,7 +233,7 @@ describe('GateKeeper tests', function () {
                 ]}, function (err, result) {
                     expect(err).toBeTruthy();
                     expect(result).toBeUndefined();
-                    expect(err.message).toBe('api.error.invalid.params');
+                    expect(err.message).toBe('gatekeeper.error.invalid.params');
                     done();
                 });
             });
@@ -245,7 +245,7 @@ describe('GateKeeper tests', function () {
                 ]}, function (err, result) {
                     expect(err).toBeTruthy();
                     expect(result).toBeUndefined();
-                    expect(err.message).toBe('api.error.invalid.params');
+                    expect(err.message).toBe('gatekeeper.error.invalid.params');
                     done();
                 });
             });
@@ -342,7 +342,7 @@ describe('GateKeeper tests', function () {
                 it('Return isEnabled false if any permissions are disabled and no permissions passed', function (done) {
                     var callback = gate.isEnabledFeature('before-feature');
                     callback({}, {}, function (err, result) {
-                        expect(err).toEqual({ message: 'api.error.forbidden' });
+                        expect(err).toEqual({ message: 'gatekeeper.error.forbidden' });
                         expect(result).toBe(false);
                         done();
                     });
@@ -360,7 +360,7 @@ describe('GateKeeper tests', function () {
                             };
                             var callback = gate.isEnabledFeature('before-feature');
                             callback({}, {}, function (err, result) {
-                                expect(err).toEqual({ message: 'api.error.forbidden' });
+                                expect(err).toEqual({ message: 'gatekeeper.error.forbidden' });
                                 expect(result).toBe(false);
                                 done();
                             });
@@ -418,7 +418,7 @@ describe('GateKeeper tests', function () {
                     };
                     var callback = gate.isEnabledFeature('before-feature');
                     callback({}, {}, function (err, result) {
-                        expect(err).toEqual({ message: 'api.error.forbidden' });
+                        expect(err).toEqual({ message: 'gatekeeper.error.forbidden' });
                         expect(result).toBe(false);
                         done();
                     });
@@ -433,7 +433,7 @@ describe('GateKeeper tests', function () {
                     };
                     var callback = gate.isEnabledFeature('before-feature');
                     callback({}, {}, function (err, result) {
-                        expect(err).toEqual({ message: 'api.error.forbidden' });
+                        expect(err).toEqual({ message: 'gatekeeper.error.forbidden' });
                         expect(result).toBe(false);
                         done();
                     });
