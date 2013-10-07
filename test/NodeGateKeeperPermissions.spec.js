@@ -7,9 +7,12 @@ describe('GateKeeper Permissions tests', function () {
     var connection = mongoose.createConnection('mongodb://localhost:3001/NodeGatekeeperTests');
 
     var TestClass = require('../index');
-    TestClass.initialize(connection, function (req, res, next) {
+
+    var permissionFunction = function (req, res, next) {
         next(null, [{name:'admin'}]);
-    });
+    };
+
+    TestClass.initialize(connection, permissionFunction);
     var Feature = TestClass.Feature;
     var Permission = TestClass.Permission;
 

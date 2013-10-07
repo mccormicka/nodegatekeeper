@@ -7,11 +7,10 @@ describe('GateKeeper tests', function () {
     var connection = mongoose.createConnection('mongodb://localhost:3001/NodeGatekeeperTests');
 
     var TestClass = require('../index');
-    TestClass.initialize(connection, function (req, res, next) {
-        next(null, [
-            {name: 'admin'}
-        ]);
-    });
+    var permissionFunction = function (req, res, next) {
+        next(null, [{name:'admin'}]);
+    };
+    TestClass.initialize(connection, permissionFunction);
     var Feature = TestClass.Feature;
     var Permission = TestClass.Permission;
 
@@ -26,11 +25,15 @@ describe('GateKeeper tests', function () {
             Feature.create({flag: 'before-feature', permissions: [
                     {
                         name: beforePermission.name,
-                        _id: beforePermission._id
+                        _id: beforePermission._id,
+                        enabled:false,
+                        percent:1
                     },
                     {
                         name: admin.name,
-                        _id: admin._id
+                        _id: admin._id,
+                        enabled:true,
+                        percent:1
                     }
                 ], enabled: true},
                 {flag: 'percent', enabled: true}, function (err) {
@@ -324,15 +327,16 @@ describe('GateKeeper tests', function () {
                 });
             });
 
-            it('Return isEnabled false if one of the permissions is unknown', function (done) {
-                gate.isEnabled({flag: 'before-feature', permissions: [
-                    {name: 'Admin'},
-                    {name: 'blah'}
-                ]}, function (err, result) {
-                    expect(result).toBe(false);
+            it('Return is enabled if one of the permissions is enabled', function (done) {
+                gate.isEnabled({flag:'before-feature', permissions:[
+                    {name:'admin'},
+                    {name:'before-permission'}
+                ]}, function(err, result){
+                    expect(result).toBe(true);
                     done(err);
                 });
             });
+
         });
 
         describe('isEnabledFeature middleware', function () {
@@ -341,6 +345,9 @@ describe('GateKeeper tests', function () {
 
                 it('Return isEnabled false if any permissions are disabled and no permissions passed', function (done) {
                     var callback = gate.isEnabledFeature('before-feature');
+                    spyOn(gate, 'permissionsFunction').andCallFake(function(req, res, next){
+                        next(null, []);
+                    });
                     callback({}, {}, function (err, result) {
                         expect(err).toEqual({ message: 'gatekeeper.error.forbidden' });
                         expect(result).toBe(false);
@@ -413,21 +420,6 @@ describe('GateKeeper tests', function () {
                 it('Return isEnabled false for an unknown permission', function (done) {
                     gate.permissionsFunction = function (req, res, next) {
                         next(null, [
-                            {name: 'blah'}
-                        ]);
-                    };
-                    var callback = gate.isEnabledFeature('before-feature');
-                    callback({}, {}, function (err, result) {
-                        expect(err).toEqual({ message: 'gatekeeper.error.forbidden' });
-                        expect(result).toBe(false);
-                        done();
-                    });
-                });
-
-                it('Return isEnabled false if one of the permissions is unknown', function (done) {
-                    gate.permissionsFunction = function (req, res, next) {
-                        next(null, [
-                            {name: 'admin'},
                             {name: 'blah'}
                         ]);
                     };
